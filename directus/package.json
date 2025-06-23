@@ -1,0 +1,19 @@
+{
+  "name": "@directus-poc/directus",
+  "version": "1.0.0",
+  "description": "Directus CMS backend",
+  "main": "index.js",
+  "scripts": {
+    "start": "directus start",
+    "dev": "directus start",
+    "bootstrap": "directus bootstrap",
+    "schema:apply": "directus schema apply",
+    "schema:snapshot": "directus schema snapshot"
+  },
+  "dependencies": {
+    "directus": "^10.8.3"
+  },
+  "engines": {
+    "node": "^18.20.2 || >=20.9.0"
+  }
+}

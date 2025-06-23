@@ -1,0 +1,98 @@
+version: "3.8"
+
+services:
+  # Directus CMS Backend (Development)
+  directus-backend:
+    image: directus/directus:latest
+    ports:
+      - "8055:8055"
+    environment:
+      NODE_ENV: development
+      DB_CLIENT: pg
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: directus
+      DB_USER: postgres
+      DB_PASSWORD: yourpassword
+      DATABASE_URL: postgresql://postgres:yourpassword@postgres:5432/directus
+      ADMIN_EMAIL: admin@example.com
+      ADMIN_PASSWORD: admin123
+      KEY: d41d8cd98f00b204e9800998ecf8427e
+      SECRET: 6c0e9c8b9c8b9c8b9c8b9c8b9c8b9c8b
+      CORS_ENABLED: true
+      CORS_ORIGIN: http://localhost:3001
+      LOG_LEVEL: debug
+      CACHE_ENABLED: false
+      RATE_LIMITER_ENABLED: false
+    env_file:
+      - ./directus/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+    volumes:
+      - directus_uploads:/directus/uploads
+      - ./directus/extensions:/directus/extensions
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8055/server/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Astro Frontend (Development)
+  astro-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+      target: development
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: development
+      DIRECTUS_URL: http://directus-backend:8055
+    depends_on:
+      directus-backend:
+        condition: service_healthy
+    networks:
+      - app-network
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: pnpm run dev
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3001 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # PostgreSQL Database
+  postgres:
+    restart: always
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: yourpassword
+      POSTGRES_DB: directus
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data_dev:
+  directus_uploads:

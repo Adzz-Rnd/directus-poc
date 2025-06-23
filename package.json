@@ -1,0 +1,31 @@
+{
+  "name": "directus-poc",
+  "version": "1.0.0",
+  "description": "Monorepo with Directus CMS backend and Astro frontend",
+  "main": "index.js",
+  "scripts": {
+    "dev": "docker compose -f docker-compose.dev.yml up --build",
+    "dev:backend": "cd directus && docker-compose up",
+    "dev:frontend": "cd frontend && pnpm run dev",
+    "build": "docker compose build",
+    "start": "docker compose up",
+    "start:prod": "docker compose up --build",
+    "stop": "docker compose down && docker-compose -f docker-compose.dev.yml down",
+    "clean": "docker compose down -v --remove-orphans && docker-compose -f docker-compose.dev.yml down -v --remove-orphans",
+    "logs": "docker compose logs -f",
+    "logs:dev": "docker compose -f docker-compose.dev.yml logs -f",
+    "install:frontend": "cd frontend && pnpm install",
+    "install:backend": "cd directus && pnpm install",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "private": true,
+  "workspaces": [
+    "directus",
+    "frontend"
+  ],
+  "engines": {
+    "node": "^18.20.2 || >=20.9.0",
+    "pnpm": "^8 || ^10"
+  },
+  "packageManager": "pnpm@10.12.1+sha512.f0dda8580f0ee9481c5c79a1d927b9164f2c478e90992ad268bbb2465a736984391d6333d2c327913578b2804af33474ca554ba29c04a8b13060a717675ae3ac"
+}

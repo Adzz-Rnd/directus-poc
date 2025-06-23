@@ -1,0 +1,170 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const directusUrl = process.env.DIRECTUS_URL || 'http://directus-backend:8055';
+
+// Basic health check to Directus
+let directusStatus = 'Unknown';
+let directusData = null;
+
+try {
+  const response = await fetch(`${directusUrl}/server/health`);
+  if (response.ok) {
+    directusStatus = 'Connected';
+    directusData = await response.json();
+  } else {
+    directusStatus = 'Error';
+  }
+} catch (error) {
+  directusStatus = 'Disconnected';
+  console.error('Directus connection error:', error);
+}
+---
+
+<Layout title="Directus POC - Astro Frontend">
+  <div class="container">
+    <h1>🚀 Directus POC with Astro</h1>
+    
+    <div class="status-card">
+      <h2>Directus Connection Status</h2>
+      <div class={`status ${directusStatus.toLowerCase()}`}>
+        <span class="status-indicator"></span>
+        {directusStatus}
+      </div>
+      
+      {directusData && (
+        <div class="health-info">
+          <h3>Health Check Data:</h3>
+          <pre>{JSON.stringify(directusData, null, 2)}</pre>
+        </div>
+      )}
+    </div>
+
+    <div class="info-card">
+      <h2>Project Information</h2>
+      <ul>
+        <li><strong>Frontend:</strong> Astro (Port 3001)</li>
+        <li><strong>Backend:</strong> Directus CMS (Port 8055)</li>
+        <li><strong>Database:</strong> PostgreSQL (Port 5432)</li>
+        <li><strong>Package Manager:</strong> pnpm</li>
+        <li><strong>Architecture:</strong> Docker Compose Monorepo</li>
+      </ul>
+    </div>
+
+    <div class="links-card">
+      <h2>Quick Links</h2>
+      <div class="links">
+        <a href={`${directusUrl}/admin`} target="_blank" rel="noopener noreferrer">
+          Directus Admin Panel
+        </a>
+        <a href={`${directusUrl}/server/health`} target="_blank" rel="noopener noreferrer">
+          Directus Health Check
+        </a>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .container {
+    text-align: center;
+  }
+
+  h1 {
+    font-size: 3rem;
+    margin-bottom: 2rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+  }
+
+  .status-card, .info-card, .links-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 2rem 0;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 1rem 0;
+  }
+
+  .status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .status.connected .status-indicator {
+    background-color: #10b981;
+    box-shadow: 0 0 10px #10b981;
+  }
+
+  .status.disconnected .status-indicator,
+  .status.error .status-indicator {
+    background-color: #ef4444;
+    box-shadow: 0 0 10px #ef4444;
+  }
+
+  .status.unknown .status-indicator {
+    background-color: #f59e0b;
+    box-shadow: 0 0 10px #f59e0b;
+  }
+
+  .health-info {
+    margin-top: 1rem;
+    text-align: left;
+  }
+
+  .health-info pre {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 0.9rem;
+  }
+
+  .info-card ul {
+    text-align: left;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .info-card li {
+    margin: 0.5rem 0;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+  }
+
+  .links {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .links a {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .links a:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+</style>
