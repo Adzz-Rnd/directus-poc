@@ -1,0 +1,64 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to Production Server
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
+
+      - name: Deploy to Server
+        run: |
+          ssh -o StrictHostKeyChecking=no ubuntu@YOUR_SERVER_IP '
+            cd dev/directus-poc &&
+            git pull origin main &&
+            sudo pnpm run stop &&
+            sudo docker compose up -d --build
+          '
+
+      - name: Verify Container Health
+        run: |
+          ssh -o StrictHostKeyChecking=no ubuntu@YOUR_SERVER_IP '
+            cd dev/directus-poc &&
+            echo "Waiting for containers to be healthy..." &&
+            timeout=300 &&
+            elapsed=0 &&
+            while [ $elapsed -lt $timeout ]; do
+              if sudo docker compose ps --format "table {{.Name}}\t{{.Status}}" | grep -E "(healthy|Up)" | wc -l | grep -q "3"; then
+                echo "All containers are running successfully!" &&
+                sudo docker compose ps &&
+                exit 0
+              fi
+              echo "Waiting for containers to start... ($elapsed/$timeout seconds)" &&
+              sleep 10 &&
+              elapsed=$((elapsed + 10))
+            done &&
+            echo "Timeout: Containers failed to start within $timeout seconds" &&
+            sudo docker compose ps &&
+            sudo docker compose logs --tail=50 &&
+            exit 1
+          '
+
+      - name: Deployment Status
+        if: always()
+        run: |
+          if [ ${{ job.status }} == 'success' ]; then
+            echo "✅ Deployment completed successfully!"
+            echo "🌐 Frontend: http://YOUR_SERVER_IP:3001"
+            echo "⚙️  Directus Admin: http://YOUR_SERVER_IP:8055/admin"
+          else
+            echo "❌ Deployment failed!"
+            exit 1
+          fi
