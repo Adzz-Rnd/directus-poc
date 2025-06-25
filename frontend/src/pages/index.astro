@@ -1,7 +1,10 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
+// Server-side URL for internal Docker network communication
 const directusUrl = process.env.DIRECTUS_URL || 'http://directus-backend:8055';
+// Client-side URL for browser links
+const directusClientUrl = 'http://localhost:8055';
 
 // Basic health check to Directus
 let directusStatus = 'Unknown';
@@ -24,14 +27,14 @@ try {
 <Layout title="Directus POC - Astro Frontend">
   <div class="container">
     <h1>🚀 Directus POC with Astro</h1>
-    
+
     <div class="status-card">
       <h2>Directus Connection Status</h2>
       <div class={`status ${directusStatus.toLowerCase()}`}>
         <span class="status-indicator"></span>
         {directusStatus}
       </div>
-      
+
       {directusData && (
         <div class="health-info">
           <h3>Health Check Data:</h3>
@@ -54,10 +57,10 @@ try {
     <div class="links-card">
       <h2>Quick Links</h2>
       <div class="links">
-        <a href={`${directusUrl}/admin`} target="_blank" rel="noopener noreferrer">
+        <a href={`${directusClientUrl}/admin`} target="_blank" rel="noopener noreferrer">
           Directus Admin Panel
         </a>
-        <a href={`${directusUrl}/server/health`} target="_blank" rel="noopener noreferrer">
+        <a href={`${directusClientUrl}/server/health`} target="_blank" rel="noopener noreferrer">
           Directus Health Check
         </a>
       </div>
