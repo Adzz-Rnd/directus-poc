@@ -6,14 +6,26 @@ RUN npm install -g pnpm
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package.json pnpm-lock.yaml* ./
+# Copy workspace configuration files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Copy frontend package.json
+COPY frontend/package.json ./frontend/
 
-# Copy source code
-COPY . .
+# Copy directus package.json for workspace
+COPY directus/package.json ./directus/
+
+# Install dependencies for the entire workspace
+RUN pnpm install
+
+# Copy frontend source code
+COPY frontend/ ./frontend/
+
+# Set working directory to frontend
+WORKDIR /app/frontend
+
+# Install frontend dependencies locally
+RUN pnpm install
 
 # Build the application
 RUN pnpm run build
