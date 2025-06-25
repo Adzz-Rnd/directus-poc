@@ -10,17 +10,27 @@ const directusClientUrl = 'http://localhost:8055';
 let directusStatus = 'Unknown';
 let directusData = null;
 
+console.log('Attempting to connect to Directus at:', directusUrl);
+
 try {
-  const response = await fetch(`${directusUrl}/server/health`);
+  const response = await fetch(`${directusUrl}/server/health`, {
+    timeout: 10000, // 10 second timeout
+    headers: {
+      'User-Agent': 'Astro-Frontend'
+    }
+  });
   if (response.ok) {
     directusStatus = 'Connected';
     directusData = await response.json();
+    console.log('Successfully connected to Directus');
   } else {
     directusStatus = 'Error';
+    console.error('Directus response not ok:', response.status, response.statusText);
   }
 } catch (error) {
   directusStatus = 'Disconnected';
   console.error('Directus connection error:', error);
+  console.error('Attempted URL:', directusUrl);
 }
 ---
 

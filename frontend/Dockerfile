@@ -24,11 +24,14 @@ COPY frontend/ ./frontend/
 # Set working directory to frontend
 WORKDIR /app/frontend
 
-# Install frontend dependencies locally
+# Install frontend dependencies locally to ensure they're available
 RUN pnpm install
 
 # Build the application
 RUN pnpm run build
+
+# Set working directory back to workspace root for running
+WORKDIR /app
 
 # Expose port
 EXPOSE 3001
@@ -37,5 +40,5 @@ EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD curl -f http://localhost:3001 || exit 1
 
-# Start the application
-CMD ["pnpm", "run", "preview"]
+# Start the application from workspace root
+CMD ["pnpm", "--filter", "@directus-poc/frontend", "run", "preview", "--host", "0.0.0.0", "--port", "3001"]
